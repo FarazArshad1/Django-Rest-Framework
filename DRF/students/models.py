@@ -45,6 +45,21 @@ class Students(models.Model):
                 }
             )
 
+    def save(self, *args, **kwargs):
+        self.full_clean()  # triggers `clean()`
+        super().save(*args, **kwargs)
+
+
     class Meta:
         verbose_name = "Student"
         verbose_name_plural = "Students"
+
+
+
+
+
+
+# subscription -> utils
+# cloud loom -> subscription
+# make sure ->  imessage, whatsapp works properly
+# homespun in cofig -> 90 days

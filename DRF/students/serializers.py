@@ -1,10 +1,7 @@
 from rest_framework import serializers
+from .models import Students
 
-class StudentSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
-    name = serializers.CharField(max_length=100)
-    batch = serializers.IntegerField()
-    roll_number = serializers.CharField(max_length=25)
-    city = serializers.CharField(max_length=100)
-
-    
+class StudentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Students
+        fields = "__all__"
