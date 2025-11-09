@@ -2,8 +2,13 @@ from django.db import models
 from uuid import uuid4
 from django.core.exceptions import ValidationError
 from datetime import datetime
+from django.utils import timezone
 import re
 
+class ActiveStudentManager(models.Manager):
+    """ Manager that returns only active (non-deleted) students"""
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted = False)
 
 class Students(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
@@ -11,6 +16,12 @@ class Students(models.Model):
     batch = models.PositiveIntegerField()
     roll_number = models.CharField(max_length=25, unique=True)
     city = models.CharField(max_length=100)
+
+    created_at = models.DateTimeField(null=False)
+
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    deleted_by = models.ForeignKey("auth.User", on_delete=models.SET_NULL, null=True, blank=True ,related_name="deleted_students")
 
     def __str__(self):
         return f"{self.name} ({self.roll_number})"
@@ -49,14 +60,25 @@ class Students(models.Model):
         self.full_clean()  # triggers `clean()`
         super().save(*args, **kwargs)
 
+    # Soft delete
+    def delete(self, user=None, *args, **kwargs):
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        if user:
+            self.deleted_by = user
+        self.save()
+
+    # Restore a soft-deleted record
+    def restore(self):
+        self.is_deleted = False
+        self.is_deleted = timezone.now()
+        self.save()
 
     class Meta:
+        db_tables = "students"
         verbose_name = "Student"
         verbose_name_plural = "Students"
-
-
-
-
+        ordering = ["-batch", "roll_number"]
 
 
 # subscription -> utils
