@@ -75,7 +75,6 @@ class Students(models.Model):
         self.save()
 
     class Meta:
-        db_tables = "students"
         verbose_name = "Student"
         verbose_name_plural = "Students"
         ordering = ["-batch", "roll_number"]
